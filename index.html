@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HelioTrack Bridge | USB Serial to Supabase IoT Gateway</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 100 10 5 5 0 000-10z'/></svg>">
+</head>
+<body>
+  <div class="admin-wrapper">
+    <!-- Top Sticky Header -->
+    <header class="admin-header">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>HelioTrack</span>
+            <span class="brand-badge">DATA BRIDGE</span>
+          </div>
+          <div class="brand-subtitle">USB Serial to Supabase Cloud Gateway</div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Status USB Serial -->
+        <div class="status-pill" id="usb-status-pill" title="Status Koneksi USB Serial Microcontroller">
+          <span class="rx-indicator-dot" id="usb-rx-dot"></span>
+          <span id="usb-status-text">USB Terputus</span>
+        </div>
+
+        <!-- Supabase Connection Status Pill -->
+        <div class="status-pill" id="supa-status-pill" title="Status Database Supabase">
+          <span class="pulse-dot" id="supa-pulse-dot"></span>
+          <span id="supa-status-text">Memeriksa Supabase...</span>
+        </div>
+
+        <!-- Tombol Modal Schema SQL -->
+        <button type="button" class="btn btn-secondary" onclick="AdminApp.openModal('modal-schema-sql')" title="Lihat Script Pembuatan Tabel SQL Supabase">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>SQL Schema</span>
+        </button>
+
+        <!-- Tombol Pengaturan Supabase -->
+        <button type="button" class="btn btn-secondary" onclick="AdminApp.openModal('modal-supabase-settings')" title="Konfigurasi URL & Anon Key Supabase">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Konfigurasi</span>
+        </button>
+
+        <!-- Tautan ke Tracker Asli -->
+        <a href="../solar-panel-tracker/homepage.html" target="_blank" class="btn btn-outline" title="Buka Tracker Klien di Tab Baru">
+          <span>Ke Tracker</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Hero Stats Bar (Aktivitas Gateway) -->
+    <section class="bridge-hero">
+      <div class="bridge-stat-card">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="stat-rx-count">0</div>
+          <div class="stat-label">Paket Raw Masuk (RX)</div>
+        </div>
+      </div>
+
+      <div class="bridge-stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--green-accent);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="stat-synced-count" style="color: var(--green-accent);">0</div>
+          <div class="stat-label">Tersinkron ke Supabase</div>
+        </div>
+      </div>
+
+      <div class="bridge-stat-card">
+        <div class="stat-icon info">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="stat-parser-mode" style="font-size: 1.15rem;">AUTO (JSON/CSV)</div>
+          <div class="stat-label">Mode Parser Aktif</div>
+        </div>
+      </div>
+
+      <div class="bridge-stat-card">
+        <div class="stat-icon warning">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="stat-value" id="stat-last-time" style="font-size: 1.15rem;">-</div>
+          <div class="stat-label">Paket Terakhir</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Dual Grid: USB Data Bridge (Kiri) & Live Monitor / Grafik (Kanan) -->
+    <div class="admin-grid dual-mode">
+      <!-- ============================================================================== -->
+      <!-- KOLOM 1: USB DATA BRIDGE & RAW TERMINAL CONSOLE                                -->
+      <!-- ============================================================================== -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Card: Kontrol Koneksi USB & Parser Options -->
+        <section class="card" id="bridge-control-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10"/><path d="M18 8h-4"/><path d="M6 8h4"/><rect x="4" y="12" width="16" height="8" rx="2"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/></svg>
+              USB Serial Data Bridge
+            </h2>
+            <span class="card-badge">Web Serial API</span>
+          </div>
+
+          <!-- Pilihan Opsi Format Data Mentah: JSON atau CSV -->
+          <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
+            <div>
+              <div class="form-label" style="margin-bottom: 8px;">Pilih Format Data Mentah Tracker:</div>
+              <div class="format-toggle-group">
+                <button type="button" class="format-btn active" id="btn-mode-auto" onclick="AdminApp.setParserMode('auto')">
+                  ⚡ Auto-Detect
+                </button>
+                <button type="button" class="format-btn" id="btn-mode-json" onclick="AdminApp.setParserMode('json')">
+                  { } JSON
+                </button>
+                <button type="button" class="format-btn" id="btn-mode-csv" onclick="AdminApp.setParserMode('csv')">
+                  📄 CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Konfigurasi CSV (Hanya tampil/relevan bila mode CSV atau Auto) -->
+            <div id="csv-config-box" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.76rem; font-weight: 600; color: var(--text-secondary);">⚙️ Opsi Parser CSV:</span>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <label style="font-size: 0.72rem; color: var(--text-dim); display: flex; align-items: center; gap: 4px;">
+                    Pemisah:
+                    <select id="csv-delimiter" class="form-input" style="padding: 2px 6px; font-size: 0.75rem; width: auto;">
+                      <option value="auto">Otomatis (, atau ;)</option>
+                      <option value=",">Koma (,)</option>
+                      <option value=";">Titik Koma (;)</option>
+                    </select>
+                  </label>
+                  <label style="font-size: 0.72rem; color: var(--text-dim); display: flex; align-items: center; gap: 4px;">
+                    Urutan Kolom:
+                    <select id="csv-preset" class="form-input" style="padding: 2px 6px; font-size: 0.75rem; width: auto;">
+                      <option value="v,i,p,e,irr,deg">V, I, P, E, Irr, Sudut (Standar)</option>
+                      <option value="v,i,irr,deg">V, I, Irr, Sudut (Auto P=V×I)</option>
+                      <option value="v,i,p,irr,deg">V, I, P, Irr, Sudut</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div style="font-size: 0.7rem; color: var(--text-dim);">
+                💡 Mendukung angka mentah langsung (contoh: <code>385.4, 12.5, 4817.5, 34.8, 895, 34.5</code>) atau baris header pertama.
+              </div>
+            </div>
+
+            <!-- Opsi Serial Port & Auto Sync -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="select-baudrate" style="font-size: 0.78rem; color: var(--text-dim);">Baud Rate:</label>
+                <select id="select-baudrate" class="form-input" style="padding: 6px 10px; font-size: 0.8rem; width: auto;">
+                  <option value="9600">9600</option>
+                  <option value="19200">19200</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="115200" selected>115200 (Default ESP32)</option>
+                  <option value="230400">230400</option>
+                </select>
+              </div>
+
+              <label class="switch-container" style="cursor: pointer;">
+                <input type="checkbox" id="chk-auto-supabase" class="switch-input" checked>
+                <div class="switch-track">
+                  <div class="switch-thumb"></div>
+                </div>
+                <span style="font-size: 0.78rem; font-weight: 600; color: var(--green-accent);">Auto-Push ke Supabase</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Tombol Koneksi & Uji Simulasi -->
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button type="button" class="btn btn-primary" id="btn-serial-connect" onclick="AdminApp.toggleSerialConnection()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v10"/><path d="M18 8h-4"/><path d="M6 8h4"/><rect x="4" y="12" width="16" height="8" rx="2"/></svg>
+              <span id="btn-serial-text">🔌 Hubungkan USB Serial</span>
+            </button>
+
+            <!-- Tombol Test Cepat Simulator Data Mentah -->
+            <div style="display: flex; gap: 6px; margin-left: auto;">
+              <button type="button" class="btn btn-secondary" onclick="AdminApp.simulatePacket('json')" title="Kirim contoh data format JSON">
+                🧪 Test JSON
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="AdminApp.simulatePacket('csv')" title="Kirim contoh data format CSV">
+                🧪 Test CSV
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card: Raw Stream Terminal Console -->
+        <section class="card terminal-card">
+          <div class="terminal-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              <h2 class="card-title" style="font-size: 0.95rem;">Live Raw Stream Console</h2>
+              <span class="rx-indicator-dot" id="terminal-rx-lamp"></span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: var(--text-dim); display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                <input type="checkbox" id="chk-autoscroll" checked style="accent-color: var(--green-accent);">
+                Auto-Scroll
+              </label>
+              <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 0.7rem;" onclick="AdminApp.clearTerminal()">
+                Bersihkan
+              </button>
+              <button type="button" class="btn btn-outline" style="padding: 3px 8px; font-size: 0.7rem;" onclick="AdminApp.copyTerminalLogs()">
+                Salin Log
+              </button>
+            </div>
+          </div>
+
+          <div class="terminal-window">
+            <div class="terminal-body" id="terminal-body">
+              <div class="log-entry">
+                <span class="log-time">00:00:00</span>
+                <span class="log-badge sys">SYSTEM</span>
+                <span class="log-text">HelioTrack USB Data Bridge siap. Klik [Hubungkan USB Serial] untuk membaca data mentah tracker.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================================== -->
+      <!-- KOLOM 2: LIVE MONITOR PARAMETER & GRAFIK TELEMETRI                             -->
+      <!-- ============================================================================== -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Card 1: Metric Telemetry Cards -->
+        <section class="card" id="monitor-section">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Live Telemetry Monitor
+            </h2>
+            <div class="status-pill" style="padding: 3px 10px;">
+              <span class="pulse-dot"></span>
+              <span>DIRECT USB FEED</span>
+            </div>
+          </div>
+
+          <!-- 4 Metric Cards -->
+          <div class="summary-grid" style="margin-bottom: 18px;">
+            <!-- Power -->
+            <div class="summary-card power">
+              <div class="metric-header">
+                <span class="metric-label">Daya (Power)</span>
+                <div class="metric-icon-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-power">4.82</span>
+                <span class="metric-unit">kW</span>
+              </div>
+              <div class="metric-sub">
+                <span id="val-power-watt" style="color: var(--green-accent);">4817.5 W</span>
+              </div>
+            </div>
+
+            <!-- Voltage -->
+            <div class="summary-card voltage">
+              <div class="metric-header">
+                <span class="metric-label">Voltase</span>
+                <div class="metric-icon-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-voltage">385.4</span>
+                <span class="metric-unit">V</span>
+              </div>
+              <div class="metric-sub">
+                <span>DC Solar Array</span>
+              </div>
+            </div>
+
+            <!-- Current -->
+            <div class="summary-card current">
+              <div class="metric-header">
+                <span class="metric-label">Arus Listrik</span>
+                <div class="metric-icon-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-current">12.50</span>
+                <span class="metric-unit">A</span>
+              </div>
+              <div class="metric-sub">
+                <span>Current Load</span>
+              </div>
+            </div>
+
+            <!-- Irradiance -->
+            <div class="summary-card irradiance">
+              <div class="metric-header">
+                <span class="metric-label">Irradiansi</span>
+                <div class="metric-icon-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-irradiance">895</span>
+                <span class="metric-unit">W/m²</span>
+              </div>
+              <div class="metric-sub">
+                <span>Solar Intensity</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Axis Visualizer (Tilt & Azimuth) -->
+          <div class="health-system-card" style="margin-top: 0;">
+            <div class="tracker-visualizer">
+              <!-- Azimuth Angle -->
+              <div class="angle-box">
+                <div class="angle-icon-circle">
+                  <div class="needle-indicator" id="azimuth-needle" style="transform: rotate(142deg);"></div>
+                </div>
+                <div class="angle-details">
+                  <span class="angle-title">Azimuth Angle</span>
+                  <span class="angle-number" id="val-azimuth">142.0° SE</span>
+                </div>
+              </div>
+
+              <!-- Tilt / Elevation Angle -->
+              <div class="angle-box">
+                <div class="angle-icon-circle">
+                  <div class="needle-indicator" id="elevation-needle" style="transform: rotate(34.5deg); background-color: var(--green-accent);"></div>
+                </div>
+                <div class="angle-details">
+                  <span class="angle-title">Tilt / Kemiringan</span>
+                  <span class="angle-number" id="val-elevation">34.5°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Real-Time Dynamic Curves (Grafik) -->
+        <section class="card" id="chart-section">
+          <div class="card-header" style="margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <h2 class="card-title">Grafik Telemetri Real-Time</h2>
+            </div>
+            <span class="card-badge" id="chart-point-count">Live Stream</span>
+          </div>
+
+          <!-- Tabs Metrik Grafik -->
+          <div class="chart-tab-bar">
+            <button type="button" class="chart-tab active" id="tab-chart-power" onclick="AdminApp.setChartMetric('power')">
+              ⚡ Daya (Watt)
+            </button>
+            <button type="button" class="chart-tab" id="tab-chart-vi" onclick="AdminApp.setChartMetric('vi')">
+              🔌 Voltase (V) & Arus (A)
+            </button>
+            <button type="button" class="chart-tab" id="tab-chart-irr" onclick="AdminApp.setChartMetric('irr')">
+              ☀️ Iradiasi (W/m²) & Sudut (°)
+            </button>
+          </div>
+
+          <!-- Realtime SVG Canvas Graph -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; position: relative;">
+            <svg id="realtime-telemetry-svg" class="realtime-chart-svg" viewBox="0 0 400 150">
+              <defs>
+                <linearGradient id="chartGradientGreen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.45"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                </linearGradient>
+                <linearGradient id="chartGradientBlue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="20" y1="20" x2="380" y2="20" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3"/>
+              <line x1="20" y1="65" x2="380" y2="65" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3"/>
+              <line x1="20" y1="110" x2="380" y2="110" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3"/>
+              
+              <!-- Paths -->
+              <path id="rt-area-path-1" fill="url(#chartGradientGreen)"/>
+              <path id="rt-line-path-1" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+              <path id="rt-line-path-2" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-dasharray="4,2"/>
+              <g id="rt-dots-group"></g>
+            </svg>
+
+            <!-- Chart Info Stats Footer -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.72rem; color: var(--text-dim);">
+              <span id="chart-stat-latest">Nilai Terkini: 4817.5 W</span>
+              <span id="chart-stat-max">Puncak: 4817.5 W</span>
+              <span id="chart-stat-avg">Rata-rata: 4817.5 W</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- BAGIAN 3: TABEL RIWAYAT TELEMETRI SUPABASE                                     -->
+    <!-- ============================================================================== -->
+    <section class="card collapsible-card" id="card-history">
+      <div class="card-header collapsible-header" onclick="AdminApp.toggleSection('card-history')">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <h2 class="card-title">Riwayat Sinkronisasi Supabase</h2>
+          <span class="card-badge" id="log-count-badge">0 Data</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); AdminApp.loadRecentLogs();" style="padding: 4px 10px; font-size: 0.72rem;">
+            🔄 Refresh
+          </button>
+          <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); AdminApp.exportCSV();" style="padding: 4px 10px; font-size: 0.72rem;">
+            📥 Unduh CSV
+          </button>
+          <span class="collapse-indicator">▼</span>
+        </div>
+      </div>
+
+      <div class="collapse-content">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Voltase (V)</th>
+                <th>Arus (A)</th>
+                <th>Daya</th>
+                <th>Energi (kWh)</th>
+                <th>Irradiansi</th>
+                <th>Sudut (°)</th>
+                <th>Sumber / Device</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="telemetry-tbody">
+              <!-- Rendered via Javascript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================================== -->
+    <!-- BAGIAN 4: FORM INPUT MANUAL (FALLBACK / CADANGAN)                              -->
+    <!-- ============================================================================== -->
+    <section class="card collapsible-card collapsed" id="card-manual-form">
+      <div class="card-header collapsible-header" onclick="AdminApp.toggleSection('card-manual-form')">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <h2 class="card-title">Form Input Manual (Cadangan)</h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.74rem; color: var(--text-dim);">Klik untuk buka/tutup form</span>
+          <span class="collapse-indicator">▼</span>
+        </div>
+      </div>
+
+      <div class="collapse-content">
+        <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 14px;">
+          Gunakan formulir ini jika alat tracker fisik sedang tidak terhubung dan Anda ingin menginput atau menguji data telemetri manual ke Supabase.
+        </p>
+        <form id="solar-input-form">
+          <div class="form-grid">
+            <!-- 1. Tanggal -->
+            <div class="form-group">
+              <label class="form-label" for="input-tanggal">Tanggal</label>
+              <input type="date" id="input-tanggal" class="form-input" required>
+            </div>
+            <!-- 2. Jam -->
+            <div class="form-group">
+              <label class="form-label" for="input-jam">Jam</label>
+              <input type="time" id="input-jam" step="1" class="form-input" required>
+            </div>
+            <!-- 3. Voltase -->
+            <div class="form-group">
+              <label class="form-label" for="input-voltase">Voltase (V)</label>
+              <input type="number" id="input-voltase" class="form-input" step="0.1" value="385.4" required>
+            </div>
+            <!-- 4. Arus -->
+            <div class="form-group">
+              <label class="form-label" for="input-arus">Arus Listrik (A)</label>
+              <input type="number" id="input-arus" class="form-input" step="0.01" value="12.50" required>
+            </div>
+            <!-- 5. Daya -->
+            <div class="form-group">
+              <label class="form-label" for="input-daya">Daya (W)</label>
+              <input type="number" id="input-daya" class="form-input" step="0.1" value="4817.5" required>
+            </div>
+            <!-- 6. Energi -->
+            <div class="form-group">
+              <label class="form-label" for="input-energi">Energi (kWh)</label>
+              <input type="number" id="input-energi" class="form-input" step="0.01" value="34.8" required>
+            </div>
+            <!-- 7. Irradiansi -->
+            <div class="form-group">
+              <label class="form-label" for="input-irradiansi">Irradiansi (W/m²)</label>
+              <input type="number" id="input-irradiansi" class="form-input" step="1" value="895" required>
+            </div>
+            <!-- 8. Sudut -->
+            <div class="form-group">
+              <label class="form-label" for="input-sudut">Besar Sudut (°)</label>
+              <input type="number" id="input-sudut" class="form-input" step="0.1" value="34.5" required>
+            </div>
+            <!-- Device ID -->
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label class="form-label" for="input-device-id">Device Identifier</label>
+              <input type="text" id="input-device-id" class="form-input" value="MANUAL-ADMIN-01">
+            </div>
+          </div>
+          <div class="form-actions" style="margin-top: 14px;">
+            <button type="submit" class="btn btn-primary">
+              💾 Simpan Manual ke Supabase
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="AdminApp.generateRealisticData()">
+              ✨ Isi Angka Acak
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL 1: VIEW & COPY SCHEMA SQL SUPABASE                                       -->
+  <!-- ============================================================================== -->
+  <div class="modal-overlay" id="modal-schema-sql">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Script SQL Pembuatan Tabel Supabase
+        </h3>
+        <button class="modal-close" onclick="AdminApp.closeModal('modal-schema-sql')">&times;</button>
+      </div>
+
+      <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 12px;">
+        Jalankan query ini di <strong>Supabase Dashboard &rarr; SQL Editor &rarr; Run</strong> agar tabel <code>solar_telemetry</code> dan hak akses publik aktif:
+      </p>
+
+      <div class="code-box" id="sql-code-box">CREATE TABLE IF NOT EXISTS public.solar_telemetry (
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    waktu_tanggal DATE NOT NULL DEFAULT CURRENT_DATE,
+    waktu_jam TIME NOT NULL DEFAULT CURRENT_TIME,
+    voltase NUMERIC(8, 2) NOT NULL,
+    arus_listrik NUMERIC(8, 2) NOT NULL,
+    daya NUMERIC(10, 2) NOT NULL,
+    energi_listrik NUMERIC(10, 2) NOT NULL,
+    irradiansi NUMERIC(8, 1) NOT NULL,
+    besar_sudut NUMERIC(6, 1) NOT NULL,
+    device_id TEXT DEFAULT 'SOLAR-TRACKER-01',
+    sumber TEXT DEFAULT 'usb_serial'
+);
+
+ALTER TABLE public.solar_telemetry ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Izinkan baca publik" ON public.solar_telemetry FOR SELECT USING (true);
+CREATE POLICY "Izinkan insert publik" ON public.solar_telemetry FOR INSERT WITH CHECK (true);
+CREATE POLICY "Izinkan delete publik" ON public.solar_telemetry FOR DELETE USING (true);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'solar_telemetry'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.solar_telemetry;
+  END IF;
+END $$;</div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn btn-primary" onclick="AdminApp.copySchemaSQL()">
+          📋 Salin Kode SQL (Copy)
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="AdminApp.closeModal('modal-schema-sql')">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL 2: KONFIGURASI SUPABASE KREDENSIAL                                        -->
+  <!-- ============================================================================== -->
+  <div class="modal-overlay" id="modal-supabase-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Kredensial Database Supabase
+        </h3>
+        <button class="modal-close" onclick="AdminApp.closeModal('modal-supabase-settings')">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+        <div class="form-group">
+          <label class="form-label" for="setting-supa-url">Supabase Project URL</label>
+          <input type="text" id="setting-supa-url" class="form-input" style="padding-right: 14px;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-supa-key">Supabase Public Anon Key</label>
+          <textarea id="setting-supa-key" class="form-input" rows="3" style="padding-right: 14px; font-family: monospace; font-size: 0.78rem;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline" onclick="saveSettings(true)">
+          Reset ke Default
+        </button>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" onclick="testConnectionFromModal()">
+            ⚡ Uji Koneksi
+          </button>
+          <button type="button" class="btn btn-primary" onclick="saveSettings(false)">
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts: Supabase JS SDK v2, Config, & Admin Controller -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlInput = document.getElementById('setting-supa-url');
+      const keyInput = document.getElementById('setting-supa-key');
+      if (urlInput) urlInput.value = window.SolarDB.getUrl();
+      if (keyInput) keyInput.value = window.SolarDB.getKey();
+    });
+
+    function saveSettings(reset) {
+      if (reset) {
+        window.SolarDB.resetCredentials();
+      } else {
+        const u = document.getElementById('setting-supa-url').value;
+        const k = document.getElementById('setting-supa-key').value;
+        window.SolarDB.saveCredentials(u, k);
+      }
+      AdminApp.closeModal('modal-supabase-settings');
+      AdminApp.checkSupabaseConnection();
+      AdminApp.showToast('Kredensial Supabase diperbarui!', '✓');
+    }
+
+    async function testConnectionFromModal() {
+      const u = document.getElementById('setting-supa-url').value;
+      const k = document.getElementById('setting-supa-key').value;
+      window.SolarDB.saveCredentials(u, k);
+      const res = await window.SolarDB.testConnection();
+      if (res.success) {
+        alert('✓ KONEKSI BERHASIL: Supabase terhubung & tabel siap!');
+      } else {
+        alert('HASIL: ' + res.message);
+      }
+      AdminApp.checkSupabaseConnection();
+    }
+  </script>
+</body>
+</html>
