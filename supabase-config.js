@@ -10,15 +10,15 @@ const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 const SolarDB = {
   client: null,
   realtimeSubscription: null,
-  tableName: 'solar_telemetry',
+  tableName: 'inverter_logs',
 
   // Ambil URL & Key aktif (dari localStorage jika pengguna pernah mengubah, atau default)
   getUrl() {
-    return localStorage.getItem('solar_admin_supa_url') || DEFAULT_SUPABASE_URL;
+    return DEFAULT_SUPABASE_URL;
   },
 
   getKey() {
-    return localStorage.getItem('solar_admin_supa_key') || DEFAULT_SUPABASE_ANON_KEY;
+    return DEFAULT_SUPABASE_ANON_KEY;
   },
 
   saveCredentials(url, key) {
@@ -122,16 +122,16 @@ const SolarDB = {
 
     try {
       const payload = {
-        waktu_tanggal: record.waktu_tanggal,
-        waktu_jam: record.waktu_jam,
-        voltase: parseFloat(record.voltase),
-        arus_listrik: parseFloat(record.arus_listrik),
-        daya: parseFloat(record.daya),
-        energi_listrik: parseFloat(record.energi_listrik),
-        irradiansi: parseFloat(record.irradiansi),
-        besar_sudut: parseFloat(record.besar_sudut),
-        device_id: record.device_id || 'ADMIN-PANEL-01',
-        sumber: record.sumber || 'admin_web'
+        pv_voltage: parseFloat(record.pv_voltage),
+        output_voltage: parseFloat(record.output_voltage),
+        battery_voltage: parseFloat(record.battery_voltage),
+        battery_capacity: parseFloat(record.battery_capacity ?? record.battery_capaticity),
+        controller_temp: parseFloat(record.controller_temp),
+        inverter_temp: parseFloat(record.inverter_temp),
+        operating_status: String(record.operating_status),
+        load_percentage: parseFloat(record.load_percentage),
+        raw_text: String(record.raw_text),
+        controller_charging_curr: parseFloat(record.controller_charging_curr)
       };
 
       const { data, error } = await client
@@ -251,50 +251,6 @@ const SolarDB = {
       if (raw) return JSON.parse(raw);
     } catch (e) {}
     // Seed default records awal jika kosong agar UI langsung menarik
-    return [
-      {
-        id: 'DEMO-103',
-        created_at: new Date(Date.now() - 60000).toISOString(),
-        waktu_tanggal: new Date().toISOString().split('T')[0],
-        waktu_jam: new Date(Date.now() - 60000).toTimeString().split(' ')[0],
-        voltase: 386.2,
-        arus_listrik: 12.6,
-        daya: 4866.12,
-        energi_listrik: 34.82,
-        irradiansi: 902.0,
-        besar_sudut: 35.0,
-        device_id: 'ESP32-SOLAR-01',
-        sumber: 'esp32_iot'
-      },
-      {
-        id: 'DEMO-102',
-        created_at: new Date(Date.now() - 180000).toISOString(),
-        waktu_tanggal: new Date().toISOString().split('T')[0],
-        waktu_jam: new Date(Date.now() - 180000).toTimeString().split(' ')[0],
-        voltase: 385.4,
-        arus_listrik: 12.5,
-        daya: 4817.50,
-        energi_listrik: 34.78,
-        irradiansi: 895.0,
-        besar_sudut: 34.5,
-        device_id: 'ADMIN-MANUAL',
-        sumber: 'admin_web'
-      },
-      {
-        id: 'DEMO-101',
-        created_at: new Date(Date.now() - 360000).toISOString(),
-        waktu_tanggal: new Date().toISOString().split('T')[0],
-        waktu_jam: new Date(Date.now() - 360000).toTimeString().split(' ')[0],
-        voltase: 384.0,
-        arus_listrik: 12.3,
-        daya: 4723.20,
-        energi_listrik: 34.65,
-        irradiansi: 880.0,
-        besar_sudut: 34.0,
-        device_id: 'ESP32-SOLAR-01',
-        sumber: 'esp32_iot'
-      }
-    ];
   },
 
   saveToLocalBuffer(record) {
